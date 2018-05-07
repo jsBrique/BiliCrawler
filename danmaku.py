@@ -14,18 +14,20 @@ class DanmakuCrawler:
 
     def get_cid(self,aid):
         self.htmldata=requests.get('https://www.bilibili.com/video/'+str(aid)).text
+        print(self.htmldata)
         #print(self.htmldata)
-        self.cid=re.search('cid=\\d+',self.htmldata).group()
+        self.cid=re.search('(cid=)|(cid\":)\\d+',self.htmldata).group()
         self.cid=re.sub('cid=',"",self.cid)
+        self.cid = re.sub('cid\":', "", self.cid)
         print(self.cid)
 
     def get_xml(self,save_path=''):
         self.danmaku_xml=requests.get("http://comment.bilibili.com/"+str(self.cid)+'.xml').text
 
         self.danmaku_xml=re.sub('<?xml version="1.0" encoding="UTF-8"?>','',self.danmaku_xml)
-        print(self.danmaku_xml)
+        #print(self.danmaku_xml)
         root = ET.XML(self.danmaku_xml)
-        print(root.tag, ":", root.attrib)  # 打印根元素的tag和属性
+        #print(root.tag, ":", root.attrib)  # 打印根元素的tag和属性
         str_danmaku=''
         for child in root:
             str_danmaku=str_danmaku+child.text+'\n'
@@ -35,7 +37,7 @@ class DanmakuCrawler:
 
 if __name__=='__main__':
     crl=DanmakuCrawler()
-    crl.get_cid('av16554180')
+    crl.get_cid('av21520286')
     strd=crl.get_xml()
     print(strd)
     text_from_file_with_apath = strd
@@ -43,7 +45,7 @@ if __name__=='__main__':
     wordlist_after_jieba = jieba.cut(text_from_file_with_apath, cut_all=True)
     wl_space_split = " ".join(wordlist_after_jieba)
 
-    my_wordcloud = WordCloud().generate(wl_space_split)
+    my_wordcloud = WordCloud(width=1000,height=1000,background_color='white').generate(wl_space_split)
 
     plt.imshow(my_wordcloud)
     plt.axis("off")
